@@ -1,9 +1,15 @@
+/**
+ * HTTP Routing definitions for the Vermont Covered Bridges Service
+ * 
+ * Steven Bergeron
+ * July 2020
+ */
 module.exports = app => {
   const bridges = require("../controllers/bridge.controller.js");
 
   var router = require("express").Router();
 
-  // Retrieve all bridge names
+  // Retrieve all bridge names/WGNs 
   router.get("/", bridges.findAllNames);
 
   // Retrieve verbose bridge info

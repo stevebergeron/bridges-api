@@ -1,14 +1,13 @@
+/**
+ * Server for The Vermont Covered Bridges Service
+ * 
+ * Steve Bergeron 
+ * July 2020
+ */
 const express = require("express");
 const bodyParser = require("body-parser");
-const cors = require("cors");
 
 const app = express();
-
-var corsOptions = {
-  origin: "http://localhost:8081"
-};
-
-app.use(cors(corsOptions));
 
 // parse requests of content-type - application/json
 app.use(bodyParser.json());
@@ -16,16 +15,14 @@ app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// simple route
+// base route... will include full documentation at a later time when everything is done
 app.get("/", (req, res) => {
   res.json({ message: "You have reached an API server for Vermont Covered Bridges.  More documentation to follow." });
 });
 
+// sync db to models
 const db = require("./app/models");
 db.sequelize.sync();
-// db.sequelize.sync({ force: true }).then(() => {
-//   console.log("Drop and re-sync db.");
-// });
 
 require("./app/routes/bridge.routes")(app);
 

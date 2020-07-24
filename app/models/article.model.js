@@ -1,3 +1,9 @@
+/**
+ * The Article model for the Vermont Covered Bridge service
+ * 
+ * Steve Bergeron
+ * July 2020
+ */
 module.exports = (sequelize, Sequelize) => {
   const Article = sequelize.define("articles", {
     wgn: Sequelize.STRING(15),
