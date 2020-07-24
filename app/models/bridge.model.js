@@ -1,3 +1,9 @@
+/**
+ * The Bridge model for the Vermont Covered Bridge service
+ * 
+ * Steve Bergeron
+ * July 2020
+ */
 module.exports = (sequelize, Sequelize) => {
   const Bridge = sequelize.define("bridges", {
     wgn: {

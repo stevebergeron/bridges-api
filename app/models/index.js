@@ -1,4 +1,9 @@
-const dbConfig = require("../config/local.db.config.js");
+/**
+ * The db setup for the Vermont Covered Bridge service
+ * 
+ * Steve Bergeron
+ * July 2020
+ */const dbConfig = require("../config/local.db.config.js");
 
 const Sequelize = require("sequelize");
 var sequelize = null;
