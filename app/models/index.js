@@ -1,16 +1,16 @@
-const dbConfig = require("../config/db.config.js");
+const dbConfig = require("../config/local.db.config.js");
 
 const Sequelize = require("sequelize");
 var sequelize = null;
 
 if (process.env.DATABASE_URL) {
-  // the application is executed on Heroku ... use the postgres database
+  // the application is depolyed on Heroku ... use the postgres database
   sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect:  'postgres',
     protocol: 'postgres',
   })
 } else {
-  // the application is executed on the local machine ... use local db
+  // the application is deployed on the local machine ... use local db
   sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     host: dbConfig.HOST,
     dialect: dbConfig.dialect,
