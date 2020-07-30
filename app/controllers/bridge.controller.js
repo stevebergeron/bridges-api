@@ -1,7 +1,6 @@
 /**
  * The db controller for the Vermont Covered Bridge service
  * TODOs:
- *  - consolidate repetitive error messages
  *  - expose more API endpoints (make it truly RESTful)
  * 
  * Steve Bergeron
@@ -19,12 +18,11 @@ exports.findAllNames = (req, res) => {
     .findAll({
       attributes: ['name', 'wgn'],
       order: [['name', 'ASC']]})
-    .then(bridges => { res.send(bridges) })
-    .catch(err => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving data"
-      });
-    });
+    .then(bridges => { 
+      if (!bridges.length) res.status(204).send() 
+      else res.send(bridges)
+     })
+    .catch(err => handleError(res, err));
 }
 
 // Send ALL Bridge/Article/Photo data from the database
@@ -38,13 +36,10 @@ exports.findAll = (req, res) => {
 
   Promise.all([findBridges, findArticles, findPhotos])
     .then(([bridges, articles, photos]) => {
-      res.send({ bridges, articles, photos });
+      if (!bridges.length) res.status(204).send() 
+      else res.send({ bridges, articles, photos });
     })
-    .catch(err => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving data"
-      });
-    });
+    .catch(err => handleError(res, err));
 };
 
 // Send all bridges for a county
@@ -54,13 +49,63 @@ exports.findByCounty = (req, res) => {
   var condition = county ? { county: { [Op.iLike]: `%${county}%` } } : null;
 
   Bridge.findAll({ where: condition })
-    .then(data => { res.send(data); })
-    .catch(err => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving data"
-      });
-    });
+    .then(data => { 
+      if (!data.length) res.status(204).send() 
+      else res.send(data);
+     })
+    .catch(err => handleError(res, err));
 };
+
+// Send all bridge names and WGNs for all counties in format suitable
+// to be consumed as a page menu
+exports.findAllForEachCounty = (req, res) => {
+  Bridge
+    .findAll({
+      attributes: ['county', 'name', 'wgn'],
+      order: [['county','ASC'],['name','ASC']],
+      
+    })
+    .then(bridges => { 
+      if (!bridges.length) res.status(204).send() 
+      else {
+        let currentCounty = "";
+        let menuitems = [];
+        let submenuitems = [];
+        
+        bridges.forEach(bridge => {
+          // same county
+          if (bridge.county === currentCounty) {
+            submenuitems.push({
+              'name': bridge.name,
+              'wgn': bridge.wgn
+            })
+          
+          // different county  
+          } else {
+            if (submenuitems.length > 1) {
+              menuitems.push({
+                'name': currentCounty,
+                'children': submenuitems
+              })
+              submenuitems = []
+            }
+            currentCounty = bridge.county
+            submenuitems.push({
+              'name': bridge.name,
+              'wgn': bridge.wgn
+            })
+          }
+        })
+        // final push
+        menuitems.push({
+          'name': currentCounty,
+          'children': submenuitems
+        })
+        res.send({ 'data': menuitems })
+      }
+     })
+    .catch(err => handleError(res, err));
+}
 
 // Send data for a single bridge by WGN, along with articles and photos
 // articles and photos will be sorted by a sequence numbers so they can
@@ -75,11 +120,14 @@ exports.findByWGN = (req, res) => {
 
   Promise.all([findBridges, findArticles, findPhotos])
     .then(([bridges, articles, photos]) => {
-      res.send({ bridges, articles, photos });
+      if (!bridges.length) res.status(204).send() 
+      else res.send({ bridges, articles, photos });
     })
-    .catch(err => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving data"
-      });
-    });
+    .catch(err => handleError(res, err));
 };
+
+const handleError = (res, err) => {
+  res.status(500).send({
+    message: err.message || "Some error occurred while retrieving data"
+  });
+}
