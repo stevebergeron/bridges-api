@@ -7,7 +7,7 @@
 module.exports = (sequelize, Sequelize) => {
   const Bridge = sequelize.define("bridges", {
     wgn: {
-      type: Sequelize.STRING(15),
+      type: Sequelize.STRING(30),
       allowNull: false,
       unique: true
     },
