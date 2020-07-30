@@ -19,12 +19,11 @@ exports.findAllNames = (req, res) => {
     .findAll({
       attributes: ['name', 'wgn'],
       order: [['name', 'ASC']]})
-    .then(bridges => { res.send(bridges) })
-    .catch(err => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving data"
-      });
-    });
+    .then(bridges => { 
+      if (!bridges.length) res.status(204).send() 
+      else res.send(bridges)
+     })
+    .catch(err => handleError(res, err));
 }
 
 // Send ALL Bridge/Article/Photo data from the database
@@ -38,13 +37,10 @@ exports.findAll = (req, res) => {
 
   Promise.all([findBridges, findArticles, findPhotos])
     .then(([bridges, articles, photos]) => {
-      res.send({ bridges, articles, photos });
+      if (!bridges.length) res.status(204).send() 
+      else res.send({ bridges, articles, photos });
     })
-    .catch(err => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving data"
-      });
-    });
+    .catch(err => handleError(res, err));
 };
 
 // Send all bridges for a county
@@ -54,12 +50,11 @@ exports.findByCounty = (req, res) => {
   var condition = county ? { county: { [Op.iLike]: `%${county}%` } } : null;
 
   Bridge.findAll({ where: condition })
-    .then(data => { res.send(data); })
-    .catch(err => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving data"
-      });
-    });
+    .then(data => { 
+      if (!data.length) res.status(204).send() 
+      else res.send(data);
+     })
+    .catch(err => handleError(res, err));
 };
 
 // Send data for a single bridge by WGN, along with articles and photos
@@ -75,11 +70,14 @@ exports.findByWGN = (req, res) => {
 
   Promise.all([findBridges, findArticles, findPhotos])
     .then(([bridges, articles, photos]) => {
-      res.send({ bridges, articles, photos });
+      if (!bridges.length) res.status(204).send() 
+      else res.send({ bridges, articles, photos });
     })
-    .catch(err => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving data"
-      });
-    });
+    .catch(err => handleError(res, err));
 };
+
+const handleError = (res, err) => {
+  res.status(500).send({
+    message: err.message || "Some error occurred while retrieving data"
+  });
+}
