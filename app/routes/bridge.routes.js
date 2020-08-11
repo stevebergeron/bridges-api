@@ -25,6 +25,9 @@ module.exports = app => {
   // Retrieve bridges by County
   router.get("/county/:county", bridges.findByCounty);
 
+  // Retrieve bridges for all Counties
+  router.get("/allcounties", bridges.findAllForEachCounty);
+
   // Retrieve a single bridge
   router.get("/wgn/:wgn", bridges.findByWGN);
 

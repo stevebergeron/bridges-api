@@ -1,7 +1,6 @@
 /**
  * The db controller for the Vermont Covered Bridge service
  * TODOs:
- *  - consolidate repetitive error messages
  *  - expose more API endpoints (make it truly RESTful)
  * 
  * Steve Bergeron
@@ -56,6 +55,57 @@ exports.findByCounty = (req, res) => {
      })
     .catch(err => handleError(res, err));
 };
+
+// Send all bridge names and WGNs for all counties in format suitable
+// to be consumed as a page menu
+exports.findAllForEachCounty = (req, res) => {
+  Bridge
+    .findAll({
+      attributes: ['county', 'name', 'wgn'],
+      order: [['county','ASC'],['name','ASC']],
+      
+    })
+    .then(bridges => { 
+      if (!bridges.length) res.status(204).send() 
+      else {
+        let currentCounty = "";
+        let menuitems = [];
+        let submenuitems = [];
+        
+        bridges.forEach(bridge => {
+          // same county
+          if (bridge.county === currentCounty) {
+            submenuitems.push({
+              'name': bridge.name,
+              'wgn': bridge.wgn
+            })
+          
+          // different county  
+          } else {
+            if (submenuitems.length > 1) {
+              menuitems.push({
+                'name': currentCounty,
+                'children': submenuitems
+              })
+              submenuitems = []
+            }
+            currentCounty = bridge.county
+            submenuitems.push({
+              'name': bridge.name,
+              'wgn': bridge.wgn
+            })
+          }
+        })
+        // final push
+        menuitems.push({
+          'name': currentCounty,
+          'children': submenuitems
+        })
+        res.send({ 'data': menuitems })
+      }
+     })
+    .catch(err => handleError(res, err));
+}
 
 // Send data for a single bridge by WGN, along with articles and photos
 // articles and photos will be sorted by a sequence numbers so they can
